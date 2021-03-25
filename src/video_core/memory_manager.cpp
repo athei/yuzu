@@ -338,7 +338,7 @@ void MemoryManager::FlushRegion(GPUVAddr gpu_addr, size_t size) const {
     size_t page_index{gpu_addr >> page_bits};
     size_t page_offset{gpu_addr & page_mask};
     while (remaining_size > 0) {
-        const size_t num_bytes{std::min(page_size - page_offset, remaining_size)};
+        const size_t num_bytes{std::min((size_t)(page_size - page_offset), remaining_size)};
         if (const auto page_addr{GpuToCpuAddress(page_index << page_bits)}; page_addr) {
             rasterizer->FlushRegion(*page_addr + page_offset, num_bytes);
         }
