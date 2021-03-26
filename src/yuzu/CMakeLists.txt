@@ -218,6 +218,14 @@ if (APPLE)
     target_sources(yuzu PRIVATE ${MACOSX_ICON})
     set_target_properties(yuzu PROPERTIES MACOSX_BUNDLE TRUE)
     set_target_properties(yuzu PROPERTIES MACOSX_BUNDLE_INFO_PLIST ${CMAKE_CURRENT_SOURCE_DIR}/Info.plist)
+
+    # Copy files from vulkan SDK into the app bundle
+    target_sources(yuzu PRIVATE "${VULKAN_SDK}/lib/libMoltenVK.dylib")
+    set_source_files_properties("${VULKAN_SDK}/lib/libMoltenVK.dylib" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+    target_sources(yuzu PRIVATE "${VULKAN_SDK}/lib/libvulkan.dylib")
+    set_source_files_properties("${VULKAN_SDK}/lib/libvulkan.dylib" PROPERTIES MACOSX_PACKAGE_LOCATION Frameworks)
+    target_sources(yuzu PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/MoltenVK_icd.json")
+    set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/MoltenVK_icd.json" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources/vulkan/icd.d")
 elseif(WIN32)
     # compile as a win32 gui application instead of a console application
     target_link_libraries(yuzu PRIVATE Qt5::WinMain)

@@ -291,14 +291,16 @@ public:
         AddCapability(spv::Capability::SampledBuffer);
         AddCapability(spv::Capability::StorageImageWriteWithoutFormat);
         AddCapability(spv::Capability::DrawParameters);
-        AddCapability(spv::Capability::SubgroupBallotKHR);
-        AddCapability(spv::Capability::SubgroupVoteKHR);
         AddExtension("SPV_KHR_16bit_storage");
-        AddExtension("SPV_KHR_shader_ballot");
-        AddExtension("SPV_KHR_subgroup_vote");
         AddExtension("SPV_KHR_storage_buffer_storage_class");
         AddExtension("SPV_KHR_variable_pointers");
         AddExtension("SPV_KHR_shader_draw_parameters");
+#if !defined(__APPLE)
+        AddCapability(spv::Capability::SubgroupBallotKHR);
+        AddCapability(spv::Capability::SubgroupVoteKHR);
+        AddExtension("SPV_KHR_shader_ballot");
+        AddExtension("SPV_KHR_subgroup_vote");
+#endif
 
         if (!transform_feedback.empty()) {
             if (device.IsExtTransformFeedbackSupported()) {
@@ -382,7 +384,9 @@ public:
 
 private:
     Id Decompile() {
+#if !defined(__APPLE)
         DeclareCommon();
+#endif
         DeclareVertex();
         DeclareTessControl();
         DeclareTessEval();
@@ -632,7 +636,11 @@ private:
 
     void DeclareRegisters() {
         for (const u32 gpr : ir.GetRegisters()) {
+#if defined(__APPLE__)
+            const Id id = OpVariable(t_prv_float, spv::StorageClass::Private);
+#else
             const Id id = OpVariable(t_prv_float, spv::StorageClass::Private, v_float_zero);
+#endif
             Name(id, fmt::format("gpr_{}", gpr));
             registers.emplace(gpr, AddGlobalVariable(id));
         }
@@ -641,7 +649,11 @@ private:
     void DeclareCustomVariables() {
         const u32 num_custom_variables = ir.GetNumCustomVariables();
         for (u32 i = 0; i < num_custom_variables; ++i) {
+#if defined(__APPLE__)
+            const Id id = OpVariable(t_prv_float, spv::StorageClass::Private);
+#else
             const Id id = OpVariable(t_prv_float, spv::StorageClass::Private, v_float_zero);
+#endif
             Name(id, fmt::format("custom_var_{}", i));
             custom_variables.emplace(i, AddGlobalVariable(id));
         }
@@ -649,7 +661,11 @@ private:
 
     void DeclarePredicates() {
         for (const auto pred : ir.GetPredicates()) {
+#if defined(__APPLE__)
+            const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private);
+#else
             const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private, v_false);
+#endif
             Name(id, fmt::format("pred_{}", static_cast<u32>(pred)));
             predicates.emplace(pred, AddGlobalVariable(id));
         }
@@ -657,7 +673,11 @@ private:
 
     void DeclareFlowVariables() {
         for (u32 i = 0; i < ir.GetASTNumVariables(); i++) {
+#if defined(__APPLE__)
+            const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private);
+#else
             const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private, v_false);
+#endif
             Name(id, fmt::format("flow_var_{}", static_cast<u32>(i)));
             flow_variables.emplace(i, AddGlobalVariable(id));
         }
@@ -710,7 +730,11 @@ private:
         static constexpr std::array names{"zero", "sign", "carry", "overflow"};
 
         for (std::size_t flag = 0; flag < INTERNAL_FLAGS_COUNT; ++flag) {
+#if defined(__APPLE__)
+            const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private);
+#else
             const Id id = OpVariable(t_prv_bool, spv::StorageClass::Private, v_false);
+#endif
             internal_flags[flag] = AddGlobalVariable(Name(id, names[flag]));
         }
     }
@@ -1336,7 +1360,9 @@ private:
         if (const auto comment = std::get_if<CommentNode>(&*node)) {
             if (device.HasDebuggingToolAttached()) {
                 // We should insert comments with OpString instead of using named variables
+#if !defined(__APPLE__)
                 Name(OpUndef(t_int), comment->GetText());
+#endif
             }
             return {};
         }

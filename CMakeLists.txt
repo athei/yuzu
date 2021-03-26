@@ -33,6 +33,10 @@ option(ENABLE_CUBEB "Enables the cubeb audio backend" ON)
 
 option(USE_DISCORD_PRESENCE "Enables Discord Rich Presence" OFF)
 
+if(APPLE)
+    set(VULKAN_SDK /usr/local/vulkan CACHE PATH "Path to the macOS sub directory of the vulkan sdk")
+endif()
+
 if (NOT ENABLE_WEB_SERVICE)
     set(YUZU_ENABLE_BOXCAT OFF)
 endif()
@@ -575,6 +579,7 @@ if (APPLE)
     # Umbrella framework for everything GUI-related
     find_library(COCOA_LIBRARY Cocoa)
     set(PLATFORM_LIBRARIES ${COCOA_LIBRARY} ${IOKIT_LIBRARY} ${COREVIDEO_LIBRARY})
+    add_definitions(-DVK_USE_PLATFORM_METAL_EXT)
 elseif (WIN32)
     # WSAPoll and SHGetKnownFolderPath (AppData/Roaming) didn't exist before WinNT 6.x (Vista)
     add_definitions(-D_WIN32_WINNT=0x0600 -DWINVER=0x0600)

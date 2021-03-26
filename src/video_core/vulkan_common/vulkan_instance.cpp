@@ -29,6 +29,10 @@
 #include <vulkan/vulkan_xlib.h>
 #endif
 
+#if defined(__APPLE__)
+#include <vulkan/vulkan.h>
+#endif
+
 namespace Vulkan {
 namespace {
 [[nodiscard]] std::vector<const char*> RequiredExtensions(
@@ -41,6 +45,11 @@ namespace {
 #ifdef _WIN32
     case Core::Frontend::WindowSystemType::Windows:
         extensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
+        break;
+#endif
+#if defined(__APPLE__)
+    case Core::Frontend::WindowSystemType::MacOs:
+        extensions.push_back(VK_EXT_METAL_SURFACE_EXTENSION_NAME);
         break;
 #endif
 #if !defined(_WIN32) && !defined(__APPLE__)

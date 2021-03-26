@@ -44,10 +44,12 @@ constexpr std::array REQUIRED_EXTENSIONS{
     VK_KHR_TIMELINE_SEMAPHORE_EXTENSION_NAME,
     VK_KHR_SAMPLER_MIRROR_CLAMP_TO_EDGE_EXTENSION_NAME,
     VK_EXT_VERTEX_ATTRIBUTE_DIVISOR_EXTENSION_NAME,
-    VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME,
-    VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME,
     VK_EXT_ROBUSTNESS_2_EXTENSION_NAME,
     VK_EXT_HOST_QUERY_RESET_EXTENSION_NAME,
+#ifndef __APPLE__
+    VK_EXT_SHADER_SUBGROUP_BALLOT_EXTENSION_NAME,
+    VK_EXT_SHADER_SUBGROUP_VOTE_EXTENSION_NAME,
+#endif
 #ifdef _WIN32
     VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME,
 #endif
@@ -212,7 +214,11 @@ Device::Device(VkInstance instance_, vk::PhysicalDevice physical_, VkSurfaceKHR 
             .fullDrawIndexUint32 = false,
             .imageCubeArray = true,
             .independentBlend = true,
+#if defined(__APPLE__)
+            .geometryShader = false,
+#else
             .geometryShader = true,
+#endif
             .tessellationShader = true,
             .sampleRateShading = false,
             .dualSrcBlend = false,
@@ -596,16 +602,18 @@ void Device::CheckSuitability(bool requires_swapchain) const {
         std::make_pair(features.largePoints, "largePoints"),
         std::make_pair(features.multiViewport, "multiViewport"),
         std::make_pair(features.depthBiasClamp, "depthBiasClamp"),
-        std::make_pair(features.geometryShader, "geometryShader"),
         std::make_pair(features.tessellationShader, "tessellationShader"),
         std::make_pair(features.occlusionQueryPrecise, "occlusionQueryPrecise"),
         std::make_pair(features.fragmentStoresAndAtomics, "fragmentStoresAndAtomics"),
         std::make_pair(features.shaderImageGatherExtended, "shaderImageGatherExtended"),
         std::make_pair(features.shaderStorageImageWriteWithoutFormat,
                        "shaderStorageImageWriteWithoutFormat"),
-        std::make_pair(robustness2.robustBufferAccess2, "robustBufferAccess2"),
         std::make_pair(robustness2.robustImageAccess2, "robustImageAccess2"),
+#if !defined(__APPLE__)
+        std::make_pair(robustness2.robustBufferAccess2, "robustBufferAccess2"),
         std::make_pair(robustness2.nullDescriptor, "nullDescriptor"),
+        std::make_pair(features.geometryShader, "geometryShader"),
+#endif
     };
     for (const auto& [is_supported, name] : feature_report) {
         if (is_supported) {

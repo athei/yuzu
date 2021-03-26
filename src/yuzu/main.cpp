@@ -8,6 +8,7 @@
 #include <thread>
 #ifdef __APPLE__
 #include <unistd.h> // for chdir
+#include <stdlib.h> // for setenv
 #endif
 
 // VFS includes must be before glad as they will conflict with Windows file api, which uses defines.
@@ -3313,6 +3314,7 @@ int main(int argc, char* argv[]) {
     // the user folder in the Qt Frontend, we need to cd into that working directory
     const auto bin_path = Common::FS::GetBundleDirectory() / "..";
     chdir(Common::FS::PathToUTF8String(bin_path).c_str());
+    setenv("MVK_CONFIG_FULL_IMAGE_VIEW_SWIZZLE", "1", 1);
 #endif
 
 #ifdef __linux__
